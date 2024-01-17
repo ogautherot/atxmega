@@ -3,11 +3,21 @@
    Copying and distribution of this script, with or without modification,
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.  */
+
 OUTPUT_FORMAT("elf32-avr","elf32-avr","elf32-avr")
 OUTPUT_ARCH(avr:106)
-__TEXT_REGION_LENGTH__ = DEFINED(__TEXT_REGION_LENGTH__) ? __TEXT_REGION_LENGTH__ : 1024K;
-__DATA_REGION_ORIGIN__ = DEFINED(__DATA_REGION_ORIGIN__) ? __DATA_REGION_ORIGIN__ : 0x802000;
-__DATA_REGION_LENGTH__ = DEFINED(__DATA_REGION_LENGTH__) ? __DATA_REGION_LENGTH__ : 0xffa0;
+
+__TEXT_REGION_ORIGIN__ = 0;
+__TEXT_REGION_LENGTH__ = 128K;
+__BL_TEXT_REGION_ORIGIN__ = 128K;
+__BL_TEXT_REGION_LENGTH__ = 8K;
+
+__DATA_REGION_ORIGIN__ = 0x802000;
+__DATA_REGION_LENGTH__ = 7 * 1K + 512;
+__BL_DATA_REGION_ORIGIN__ = 0x803e00;
+__BL_DATA_REGION_LENGTH__ = 0x200;
+
+
 __EEPROM_REGION_LENGTH__ = DEFINED(__EEPROM_REGION_LENGTH__) ? __EEPROM_REGION_LENGTH__ : 64K;
 __FUSE_REGION_LENGTH__ = DEFINED(__FUSE_REGION_LENGTH__) ? __FUSE_REGION_LENGTH__ : 1K;
 __LOCK_REGION_LENGTH__ = DEFINED(__LOCK_REGION_LENGTH__) ? __LOCK_REGION_LENGTH__ : 1K;
@@ -15,8 +25,16 @@ __SIGNATURE_REGION_LENGTH__ = DEFINED(__SIGNATURE_REGION_LENGTH__) ? __SIGNATURE
 __USER_SIGNATURE_REGION_LENGTH__ = DEFINED(__USER_SIGNATURE_REGION_LENGTH__) ? __USER_SIGNATURE_REGION_LENGTH__ : 1K;
 MEMORY
 {
-  text   (rx)   : ORIGIN = 0, LENGTH = __TEXT_REGION_LENGTH__
-  data   (rw!x) : ORIGIN = __DATA_REGION_ORIGIN__, LENGTH = __DATA_REGION_LENGTH__
+  text   (rx)   : ORIGIN = __TEXT_REGION_ORIGIN__,
+                  LENGTH = __TEXT_REGION_LENGTH__
+  bl_text (rx)  : ORIGIN = __BL_TEXT_REGION_ORIGIN__,
+                  LENGTH = __BL_TEXT_REGION_LENGTH__
+
+  data   (rw!x) : ORIGIN = __DATA_REGION_ORIGIN__,
+                  LENGTH = __DATA_REGION_LENGTH__
+  bl_data (rw!x) : ORIGIN = __BL_DATA_REGION_ORIGIN__,
+                  LENGTH = __BL_DATA_REGION_LENGTH__
+
   eeprom (rw!x) : ORIGIN = 0x810000, LENGTH = __EEPROM_REGION_LENGTH__
   fuse      (rw!x) : ORIGIN = 0x820000, LENGTH = __FUSE_REGION_LENGTH__
   lock      (rw!x) : ORIGIN = 0x830000, LENGTH = __LOCK_REGION_LENGTH__
@@ -82,6 +100,45 @@ SECTIONS
   .rela.bss      : { *(.rela.bss)		}
   .rel.plt       : { *(.rel.plt)		}
   .rela.plt      : { *(.rela.plt)		}
+
+  /* Boot loader */
+  .bl_text :
+  {
+    obj/bl*.o(.vectors)
+    KEEP(obj/bl*.o(.vectors))
+    . = ALIGN(2);
+    *(.progmem.*)
+    . = ALIGN(2);
+    obj/bl*.o(.text)
+    obj/bl*.o(.text.*)
+    _bl_etext = . ;
+  } > bl_text
+
+  .bl_data          :
+  {
+    PROVIDE (__bl_data_start = .) ;
+    obj/bl*.o(.data)
+    obj/bl*.o(.data*)
+    obj/bl*.o(.gnu.linkonce.d*)
+    obj/bl*.o(.rodata)  /* We need to include .rodata here if gcc is used */
+    obj/bl*.o(.rodata*) /* with -fdata-sections.  */
+    obj/bl*.o(.gnu.linkonce.r*)
+    . = ALIGN(2);
+     _bl_edata = . ;
+     PROVIDE (__bl_data_end = .) ;
+  }  > bl_data AT> bl_text
+
+  .bl_bss  ADDR(.bl_data) + SIZEOF (.bl_data)   : AT (ADDR (.bl_bss))
+  {
+     PROVIDE (__bss_start = .) ;
+    *(.bss)
+     *(.bss*)
+     *(COMMON)
+     PROVIDE (__bss_end = .) ;
+  }  > data
+   __data_load_start = LOADADDR(.data);
+   __data_load_end = __data_load_start + SIZEOF(.data);
+
   /* Internal text space or external memory.  */
   .text   :
   {
@@ -230,7 +287,7 @@ SECTIONS
   .stab.exclstr  0 : { *(.stab.exclstr) }
   .stab.index    0 : { *(.stab.index) }
   .stab.indexstr 0 : { *(.stab.indexstr) }
-  .comment 0 (INFO) : { *(.comment); LINKER_VERSION; }
+  /* .comment 0 (INFO) : { *(.comment); LINKER_VERSION; } */
   .gnu.build.attributes : { *(.gnu.build.attributes .gnu.build.attributes.*) }
   .note.gnu.build-id   : { *(.note.gnu.build-id) }
   /* DWARF debug sections.

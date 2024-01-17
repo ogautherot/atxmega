@@ -1,9 +1,9 @@
 
-OBJS=obj/bl_main.o
+OBJS=obj/bl_main.o obj/main.o
 TARGET=atxmega
 ARCH=atxmega128a3
 CFLAGS=-Og -g -mmcu=${ARCH}
-LDFLAGS=-Wl,"-T ld/atxmega128a3.ld"
+LDFLAGS=-Wl,"-Tld/atxmega128a3.ld"
 
 CC=avr-g++
 SIZE=avr-size
@@ -17,13 +17,14 @@ ${TARGET}: ${OBJS}
 
 
 obj/%.o: src/%.c
-	${CC} -S ${CFLAGS} $<
+	mkdir -p obj
 	${CC} -c ${CFLAGS} -o $@ $<
 
 obj/%.o: src/%.c++
+	mkdir -p obj
 	${CC}++ -c ${CFLAGS} -o $@ $<
 
 .PHONY: clean
 clean:
-	rm ${OBJS} ${TARGET}
+	rm -f ${OBJS} ${TARGET}
 
