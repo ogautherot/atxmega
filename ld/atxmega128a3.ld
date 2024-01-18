@@ -7,6 +7,8 @@
 OUTPUT_FORMAT("elf32-avr","elf32-avr","elf32-avr")
 OUTPUT_ARCH(avr:106)
 
+ENTRY(__vectors)
+
 __TEXT_REGION_ORIGIN__ = 0;
 __TEXT_REGION_LENGTH__ = 128K;
 __BL_TEXT_REGION_ORIGIN__ = 128K;

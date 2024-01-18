@@ -1,18 +1,25 @@
+/* ***************************************************************************
+ * Boot loader code. Keep it simple...
+ ************************************************************************** */
 
-
+#include <stdint.h>
 #include <avr/interrupt.h>
 
 
-extern "C" void bl_bad_irq();
-
-
+/* 
+ * Dummy vector table - interrupts are not active in bootloader mode so these
+ * definitions are mostly for the fun. Only the reset vector is of interest,
+ * as it may be invoked under certain circumstances.
+ *
+ * The second vector is for the API (the In-App Programming interface, for
+ * instance).
+ * *************************************************************************/
 __asm__(
-  "/* Dummy vector table - interrupts are not active in bootloader mode */\n"
   "        .section .vectors\n"
   ".global bl_vectors_table\n"
   "bl_vectors_table:\n"
   "        JMP bl_main\n"
-  "        JMP bl_bad_irq\n"
+  "        JMP bl_api\n"
   "\n"
   "        /* Resume compiled code */\n"
   "        .text\n"
@@ -20,13 +27,13 @@ __asm__(
 
 volatile int counter = 1;
 
-extern "C" int bl_main()
+int bl_main()
 {
   while (1)
     counter++;
 }
 
-void bl_bad_irq()
+int bl_api()
 {
   while (1);
 }
