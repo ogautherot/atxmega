@@ -16,6 +16,7 @@
  * *************************************************************************/
 
 volatile int counter = 1;
+int bl_othervar;
 
 int bl_main()
 {
@@ -25,5 +26,5 @@ int bl_main()
 
 int bl_api()
 {
-  while (1);
+  bl_othervar++;
 }

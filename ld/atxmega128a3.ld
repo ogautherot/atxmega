@@ -115,11 +115,12 @@ SECTIONS
     . = ALIGN(2);
     obj/bl*.o(.text)
     obj/bl*.o(.text.*)
-    _bl_etext = . ;
+    __bl_etext = . ;
   } > bl_text
 
   .bl_data          :
   {
+    __bl_data_start = .;
     PROVIDE(__bl_data_start = .) ;
     obj/bl*.o(.data)
     obj/bl*.o(.data*)
@@ -128,20 +129,23 @@ SECTIONS
     obj/bl*.o(.rodata*) /* with -fdata-sections.  */
     obj/bl*.o(.gnu.linkonce.r*)
     . = ALIGN(2);
-     _bl_data_end = . ;
+     __bl_data_end = . ;
      PROVIDE (__bl_data_end = .) ;
   }  > bl_data AT> bl_text
 
   .bl_bss  ADDR(.bl_data) + SIZEOF (.bl_data)   : AT (ADDR (.bl_bss))
   {
-     PROVIDE (__bss_start = .) ;
+    __bl_bss_start = .; 
+    PROVIDE (__bl_bss_start = .) ;
     *(.bss)
-     *(.bss*)
-     *(COMMON)
-     PROVIDE (__bss_end = .) ;
+    *(.bss*)
+    *(COMMON)
+    __bl_bss_end = .;
+    PROVIDE (__bl_bss_end = .) ;
   }  > bl_data
-   __bl_data_load_start = LOADADDR(.bl_data);
-   __bl_data_load_end = __data_load_start + SIZEOF(.bl_data);
+  __bl_data_load_start = LOADADDR(.bl_data);
+  __bl_data_load_end = __bl_data_load_start + SIZEOF(.bl_data);
+  __bl_ram_end = __BL_DATA_REGION_ORIGIN__ + __BL_DATA_REGION_LENGTH__;
 
   /* Internal text space or external memory.  */
   .text   :
@@ -254,13 +258,15 @@ SECTIONS
   }  > data
    __data_load_start = LOADADDR(.data);
    __data_load_end = __data_load_start + SIZEOF(.data);
+   __ram_end = __DATA_REGION_ORIGIN__ + __DATA_REGION_LENGTH__;
+   __stack_top = __ram_end - 1 ;
+
   /* Global data not cleared after reset.  */
   .noinit  ADDR(.bss) + SIZEOF (.bss)  :  AT (ADDR (.noinit))
   {
      PROVIDE (__noinit_start = .) ;
     *(.noinit .noinit.* .gnu.linkonce.n.*)
      PROVIDE (__noinit_end = .) ;
-     _stack_top = . - 1 ;
      _end = . ;
      PROVIDE (__heap_start = .) ;
   }  > data

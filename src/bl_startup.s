@@ -31,7 +31,7 @@ CCP = 0x34
          JMP bl_reset
          RJMP bl_api
  
-         /* Resume compiled code */
+         /*  Reset code section */
          .text
 bl_reset:
         eor     r1, r1
@@ -41,11 +41,43 @@ bl_reset:
         out     RAMPY, r1
         out     RAMPX, r1
         out     RAMPD, r1
-        ldi     r17, lo8(_stack_top)
+        ldi     r17, lo8(__stack_top)
         out     SPL, r17
-        ldi     r18, hi8(_stack_top)
+        ldi     r18, hi8(__stack_top)
         out     SPH, r18
 
+        /* Initialize RAM */
+__bl_do_copy_data:
+        ldi     r24, lo8(__bl_data_load_end)
+        ldi     r25, hi8(__bl_data_load_end)
+        ldi     r26, lo8(__bl_data_load_start)
+        ldi     r27, hi8(__bl_data_load_start)
+        ldi     r30, lo8(__bl_data_start)
+        ldi     r31, hi8(__bl_data_start)
+        ldi     r16, hh8(__bl_data_load_start)
+        out     RAMPZ, r16
+        rjmp    .+4
+.L__bl_do_copy_data_loop:
+        elpm    r0, Z+
+        st      X+, r0
+        cp      r26, r24
+        cpc     r27, r25
+        brne    .L__bl_do_copy_data_loop
 
-bl_api:
+_bl_do_clear_bss:
+        ldi     r24, lo8(__bl_bss_end)
+        ldi     r25, hi8(__bl_bss_end)
+        ldi     r26, lo8(__bl_bss_start)
+        ldi     r27, hi8(__bl_bss_start)
+        rjmp    .+4
+.L__bl_do_clear_bss_loop:
+        st      X+, r1
+        cp      r26, r24
+        cpc     r27, R25
+        brne    .L__bl_do_clear_bss_loop 
 
+        call    bl_main
+        jmp     _bl_exit
+
+_bl_exit:
+        rjmp    .-2
