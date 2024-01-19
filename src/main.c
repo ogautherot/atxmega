@@ -1,13 +1,15 @@
 
-int a[2] = { 2, 3 };
-int othervar;
+#include <stdint.h>
+#include <avr/io.h>
+
+void sys_init()
+{
+}
 
 int main()
 {
-  othervar = 5;
-  while (1) {
-      a[0]++;
-      a[1]--;
-  }
+    sys_init();
+    while (1) {
+    }
 }
 

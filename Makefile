@@ -21,7 +21,7 @@ OBJS=obj/bl_startup.o obj/bl_main.o
 OBJS+=obj/main.o
 
 ASFLAGS=-mmcu=${ARCH}
-CFLAGS=-Og -g -mmcu=${ARCH}
+CFLAGS=-Og -g -mmcu=${ARCH} -flto
 LDFLAGS=-Wl,"-Tld/atxmega128a3.ld" -Xlinker -Map=${TARGET}.map
 
 

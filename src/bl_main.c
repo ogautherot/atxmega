@@ -15,16 +15,23 @@
  * instance).
  * *************************************************************************/
 
-volatile int counter = 1;
-int bl_othervar;
+void bl_sys_init()
+{
+}
 
 int bl_main()
 {
-  while (1)
-    counter++;
+  bl_sys_init();
+  while (1);
 }
 
-int bl_api()
+int bl_api(uint8_t cmd)
 {
-  bl_othervar++;
+  switch(cmd)   {
+  case 0:
+    return 0;
+  default:
+    return -1;
+  }
 }
+

@@ -108,13 +108,13 @@ SECTIONS
   /* Boot loader */
   .bl_text :
   {
-    obj/bl*.o(.vectors)
-    KEEP(obj/bl*.o(.vectors))
+    obj/bl_*.o(.vectors)
+    KEEP(obj/bl_*.o(.vectors))
     . = ALIGN(2);
-    *(.progmem.*)
+    obj/bl_*(.progmem.*)
     . = ALIGN(2);
-    obj/bl*.o(.text)
-    obj/bl*.o(.text.*)
+    obj/bl_*.o(.text)
+    obj/bl_*.o(.text.*)
     __bl_etext = . ;
   } > bl_text
 

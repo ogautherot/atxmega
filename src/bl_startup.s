@@ -28,11 +28,12 @@ CCP = 0x34
         .section .vectors
  .global bl_vectors_table
  bl_vectors_table:
-         JMP bl_reset
+         RJMP bl_reset
          RJMP bl_api
  
          /*  Reset code section */
          .text
+         .global bl_reset
 bl_reset:
         eor     r1, r1
         out     SREG, r1
