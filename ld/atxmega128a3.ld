@@ -25,6 +25,8 @@ __FUSE_REGION_LENGTH__ = DEFINED(__FUSE_REGION_LENGTH__) ? __FUSE_REGION_LENGTH_
 __LOCK_REGION_LENGTH__ = DEFINED(__LOCK_REGION_LENGTH__) ? __LOCK_REGION_LENGTH__ : 1K;
 __SIGNATURE_REGION_LENGTH__ = DEFINED(__SIGNATURE_REGION_LENGTH__) ? __SIGNATURE_REGION_LENGTH__ : 1K;
 __USER_SIGNATURE_REGION_LENGTH__ = DEFINED(__USER_SIGNATURE_REGION_LENGTH__) ? __USER_SIGNATURE_REGION_LENGTH__ : 1K;
+
+
 MEMORY
 {
   text   (rx)   : ORIGIN = __TEXT_REGION_ORIGIN__,
@@ -118,7 +120,7 @@ SECTIONS
 
   .bl_data          :
   {
-    PROVIDE (__bl_data_start = .) ;
+    PROVIDE(__bl_data_start = .) ;
     obj/bl*.o(.data)
     obj/bl*.o(.data*)
     obj/bl*.o(.gnu.linkonce.d*)
@@ -126,7 +128,7 @@ SECTIONS
     obj/bl*.o(.rodata*) /* with -fdata-sections.  */
     obj/bl*.o(.gnu.linkonce.r*)
     . = ALIGN(2);
-     _bl_edata = . ;
+     _bl_data_end = . ;
      PROVIDE (__bl_data_end = .) ;
   }  > bl_data AT> bl_text
 
@@ -137,9 +139,9 @@ SECTIONS
      *(.bss*)
      *(COMMON)
      PROVIDE (__bss_end = .) ;
-  }  > data
-   __data_load_start = LOADADDR(.data);
-   __data_load_end = __data_load_start + SIZEOF(.data);
+  }  > bl_data
+   __bl_data_load_start = LOADADDR(.bl_data);
+   __bl_data_load_end = __data_load_start + SIZEOF(.bl_data);
 
   /* Internal text space or external memory.  */
   .text   :
@@ -258,6 +260,7 @@ SECTIONS
      PROVIDE (__noinit_start = .) ;
     *(.noinit .noinit.* .gnu.linkonce.n.*)
      PROVIDE (__noinit_end = .) ;
+     _stack_top = . - 1 ;
      _end = . ;
      PROVIDE (__heap_start = .) ;
   }  > data

@@ -7,6 +7,7 @@ export PATH := /usr/local/avr8-gnu-toolchain-linux_x86_64/bin:${PATH}
 
 CC=avr-gcc
 CXX=avr-g++
+AS=avr-as
 SIZE=avr-size
 
 ARCH=atxmega128a3
@@ -14,11 +15,12 @@ ARCH=atxmega128a3
 TARGET=build/atxmega
 
 # Boot loader-related objects
-OBJS=obj/bl_main.o 
+OBJS=obj/bl_startup.o obj/bl_main.o 
 
 # Application modules
 OBJS+=obj/main.o
 
+ASFLAGS=-g -mmcu=${ARCH}
 CFLAGS=-Og -g -mmcu=${ARCH}
 LDFLAGS=-Wl,"-Tld/atxmega128a3.ld" -Xlinker -Map=${TARGET}.map
 
@@ -38,7 +40,11 @@ obj/%.o: src/%.c
 
 obj/%.o: src/%.c++
 	mkdir -p obj
-	${CXX}++ -c ${CFLAGS} -o $@ $<
+	${CXX} -c ${CFLAGS} -o $@ $<
+
+obj/%.o: src/%.s
+	mkdir -p obj
+	${AS} -c ${ASFLAGS} -o $@ $<
 
 .PHONY: clean
 clean:
