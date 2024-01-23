@@ -2,9 +2,15 @@
 
 extern uint8_t eeprom_array[];
 
-class Eeprom {
+class Nvm {
     public:
-        Eeprom() { }
+        Nvm() { }
+        FlashFillBuffer() { }
+        FlashErasePage() { }
+        FlashWritePage() { }
+        FlashAtomicEraseWritePage() { }
+        EepromErasepage() { }
+        EepromWritePage() { }
 
     private:
         uint8_t getUint8(uint16_t addr);
