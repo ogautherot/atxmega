@@ -18,10 +18,10 @@ TARGET=build/atxmega
 OBJS=obj/bl_startup.o obj/bl_main.o 
 
 # Application modules
-OBJS+=obj/main.o
+OBJS+=obj/main.o obj/eeprom.o
 
 ASFLAGS=-mmcu=${ARCH}
-CFLAGS=-Og -g -mmcu=${ARCH} -flto
+CFLAGS=-Og -g -mmcu=${ARCH} -flto -Iinc
 LDFLAGS=-Wl,"-Tld/atxmega128a3.ld" -Xlinker -Map=${TARGET}.map
 
 
@@ -38,7 +38,7 @@ obj/%.o: src/%.c
 	mkdir -p obj
 	${CC} -c ${CFLAGS} -o $@ $<
 
-obj/%.o: src/%.c++
+obj/%.o: src/%.cpp
 	mkdir -p obj
 	${CXX} -c ${CFLAGS} -o $@ $<
 

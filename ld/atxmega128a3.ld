@@ -276,6 +276,8 @@ SECTIONS
     KEEP(*(.eeprom*))
      __eeprom_end = . ;
   }  > eeprom
+  __eeprom_start = LOADADDR(.eeprom);
+  __eeprom_end = __eeprom_start + SIZEOF(.eeprom);
   .fuse  :
   {
     KEEP(*(.fuse))
